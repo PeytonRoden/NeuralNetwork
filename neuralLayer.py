@@ -23,8 +23,8 @@ class neuralLayer:
     #get outputs
     def get_outputs(self):
         for i in range(0, len(self.layer)):
-            #self.outputs[i] = self.activation(np.dot(self.layer[i].weights, self.inputs) + self.layer[i].bias)
-            self.outputs[i] = self.relu_forward(np.dot(self.layer[i].weights, self.inputs) + self.layer[i].bias)
+            self.outputs[i] = self.activation(np.dot(self.layer[i].weights, self.inputs) + self.layer[i].bias)
+            #self.outputs[i] = self.relu_forward(np.dot(self.layer[i].weights, self.inputs) + self.layer[i].bias)
             #self.outputs[i] = self.relu(np.dot(self.layer[i].weights, self.inputs) + self.layer[i].bias)
         
         return self.outputs
@@ -76,6 +76,9 @@ class neuralLayer:
         return(1/(1 + np.exp(-x)))
 
     def relu_forward(self, inputs):
+        return np.maximum(0, inputs)
+
+    def activation(self, inputs):
         return np.maximum(0, inputs)
 
     def relu_backward(self, x):
