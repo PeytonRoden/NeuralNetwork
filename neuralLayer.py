@@ -21,7 +21,7 @@ class neuralLayer:
 
 
     #get outputs
-    def get_outputs(self):
+    def calc_outputs(self):
         for i in range(0, len(self.layer)):
             self.outputs[i] = self.activation(np.dot(self.layer[i].weights, self.inputs) + self.layer[i].bias)
             #self.outputs[i] = self.relu_forward(np.dot(self.layer[i].weights, self.inputs) + self.layer[i].bias)
@@ -36,7 +36,7 @@ class neuralLayer:
         if(len(inputs) != self.num_inputs):
             print("problem with inputs length at layer level")
 
-        return self.get_outputs()
+        return self.calc_outputs()
 
     #get input values, used for first layer
     def get_inputs(self):
@@ -71,18 +71,24 @@ class neuralLayer:
     def set_biases(self):
         pass
 
-    #sigmoid
-    def sigmoid(self, x):
-        return(1/(1 + np.exp(-x)))
-
-    def relu_forward(self, inputs):
-        return np.maximum(0, inputs)
-
     def activation(self, inputs):
         return np.maximum(0, inputs)
 
-    def relu_backward(self, x):
+    def backward(self, x):
         pass
+
+    def get_layer(self):
+        return self.layer
+
+    def get_outputs(self):
+        return self.outputs
+
+
+    def update_weights(self, learning_rate):
+
+        for i in range(0, self.layer_size):
+            #last output is only one neuron so you can use layer[0] to update weights
+            self.layer[i].weights = self.layer[i].weights + (learning_rate * self.layer[i].get_gradient())
 
 
 
@@ -91,22 +97,51 @@ class outputLayer(neuralLayer):
     def __init__(self, num_inputs, layer_size):
         super().__init__(num_inputs,layer_size)
 
-    #override activaiton funciton with softmax for last layer
-    def activation(self, x):
-        # we don't want to havw np.exp(1000) becasue that would overflow
-        # we cap the max value to be 1, by inputing -inf - 0
-        return np.exp(x- np.max(self.inputs)) 
+    #override activaiton funciton with linear activation funciton
+    def activation(self, input):
+        self.output = input
+        return self.output
 
 
-    def derivative(self, x):
+    def backward(self):
+
+        #(activation(w1*i1 + w2*i2 + bias) - target)^2
+        
+        #loss function portion
+        d_loss = -(2 * (self.output - self.target))
+
+
+        #calculate derivateve for activation function
+        #activation function is linear so it is 1
+        d_activation = 1
+
+
+        #derivative for weights
+        #it will just be the input
+
+
         return 0
 
-    def get_distribution(self):
 
-        if(np.count_nonzero(self.outputs) == 0):
-            norm_values = np.zeros(len(self.outputs))
-            return norm_values
+    def set_gradient(self, gradient : list):
+        self.layer[0].set_gradient(gradient)
 
-        norm_base = sum(self.outputs)
-        norm_values = self.outputs/norm_base
-        return norm_values
+
+
+    def loss(self, target):
+
+        #store target to do back prop
+        self.target = target
+
+
+        self.loss_value = (self.output - target) ** 2
+        return self.loss_value
+
+
+    def update_weights(self, learning_rate):
+
+        #last output is only one neuron so you can use layer[0] to update weights
+        self.layer[0].weights = self.layer[0].weights + (learning_rate * self.layer[0].get_gradient())
+
+        
+

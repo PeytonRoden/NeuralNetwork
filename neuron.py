@@ -6,6 +6,10 @@ class neuron:
         self.bias = bias
         self.weights = np.empty(num_inputs)
         self.output=0.0
+        self.gradient = np.empty(num_inputs)
+
+
+
 
     #get output of one specific neuron
     def get_output(self, inputs: list):
@@ -18,7 +22,7 @@ class neuron:
         return self.sigmoid(self.output)
 
     def sigmoid(self, x):
-        return(1/(1 + np.exp(-x)))
+        return (1/(1+np.exp(-x)))
 
     def generateRandWeights(self):
         self.weights = (self.sigmoid(np.random.randn(len(self.weights))) * 2) - 1
@@ -36,3 +40,9 @@ class neuron:
 
     def set_bias(self, bias: float):
         self.bias = bias
+
+    def set_gradient(self, gradients:list):
+        self.gradient = np.array(gradients)
+
+    def get_gradient(self):
+        return self.gradient

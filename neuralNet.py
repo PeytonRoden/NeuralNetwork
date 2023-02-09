@@ -74,38 +74,108 @@ class neuralNet:
         self.outputs = inputs
         return self.outputs
 
-    def get_output_distribution(self):
-        self.output_distribution = self.neuralNetwork[-1].get_distribution()
-        return self.output_distribution
 
     def loss(self, target):
-        #categorical cross-entropy loss
+        #MSE loss
 
-        #target will look like [0,1,0]
-        #outputs will look like [0.01,0.98,0.01]
+        self.target= target
 
-        if(len(target) != len(self.output_distribution)):
+        if(len(target) != len(self.outputs)):
             print("target array doesn't match up to otuputdistro")
             return
 
-        #clip distribution so that we don't do log(0)
-        clipped_distribution = np.clip(self.output_distribution, 1e-7, 1 - 1e-7)
 
-        #do multiplication and get -log(0.98) as answer
-        self.loss_value = -np.log(np.dot(target, clipped_distribution))
+        self.loss_value = self.neuralNetwork[-1].loss(target)
 
         return self.loss_value
+    
+    def adjust_weights(self, learning_rate):
+        self.neuralNetwork[-1].update_weights(learning_rate)
+    
+    def adjust_weights(self, learning_rate):
+
+        for i in range( len(self.neuralNetwork) - 1, 0 , -1):
+            self.neuralNetwork[i].update_weights(learning_rate)
+        
+
+    def get_gradients(self):
+        
+        for i in range( len(self.neuralNetwork) - 1, 0 , -1):
+            #(activation(w1*i1 + w2*i2 + bias) - target)^2
+
+            #last layer has different activation function
+            if(i == len(self.neuralNetwork) - 1):
+                #loss function portion
+                d_loss = -(2 * (self.neuralNetwork[i].outputs - self.target))
+
+                #calculate derivateve for activation function
+                #activation function is linear so it is 1
+                d_activation = 1
+
+
+                #derivative for weights
+                #it will just be the inputs into that layer
+                d_weights = self.neuralNetwork[i].inputs
+
+                gradient = d_weights * d_loss
+
+                self.neuralNetwork[i].set_gradient(gradient)
+
+                #print(self.gradient)
+
+            else:
+
+                for j in range(0, len(self.neuralNetwork[i].get_layer())):
+
+                    d_relu = 0
+                    #calculate derivateve for activation function
+                    #activation function is relu
+                    if(self.neuralNetwork[i].get_outputs()[j] <= 0 ):
+                        d_relu = 0
+                    else:
+                        d_relu = 1
+
+
+                    #derivative for weights
+                    #it will just be the inputs into that layer
+                    d_weights = self.neuralNetwork[i].inputs
+
+                    #get the gradient for each neuron
+                    gradient = d_weights * d_relu
+
+                    #set the gradient for the neuron
+                    self.neuralNetwork[i].get_layer()[j].set_gradient(gradient)
+
+
+
+
+                    
+
+
+
+
 
 
 
 
 
 def main():
-    neural = neuralNet(3,[20,20],2)
+
+    inputs = [0.33, 0.11]
+
+    neural = neuralNet(2,[5,5],1)
     neural.generate_weights()
-    print(neural.get_output(list(np.random.randn(3))))
-    print(neural.get_output_distribution())
-    print(neural.loss([1,0]))
+    print(neural.get_output(inputs))
+    print(neural.loss([0.5]))
+
+    for i in range(0,1000):
+        neural.get_output(inputs)
+        print("LOSS",neural.loss([0.5]))
+        neural.get_gradients()
+        neural.adjust_weights(1 * (1/(i+1)))
+
+    print(neural.get_output(inputs))
+    print(neural.loss([0.5]))
 
 
 if __name__ == "__main__":
