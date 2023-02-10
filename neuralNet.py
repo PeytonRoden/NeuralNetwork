@@ -147,12 +147,8 @@ class neuralNet:
                     self.neuralNetwork[i].get_layer()[j].set_gradient(gradient)
 
 
-
-
-                    
-
-
-
+    def get_loss(self):
+        return self.loss_value
 
 
 
@@ -163,7 +159,7 @@ def main():
 
     inputs = [0.33, 0.11]
 
-    neural = neuralNet(2,[5,5],1)
+    neural = neuralNet(2,[10,10],1)
     neural.generate_weights()
     print(neural.get_output(inputs))
     print(neural.loss([0.5]))
@@ -172,7 +168,7 @@ def main():
         neural.get_output(inputs)
         print("LOSS",neural.loss([0.5]))
         neural.get_gradients()
-        neural.adjust_weights(1 * (1/(i+1)))
+        neural.adjust_weights(1 * (1/np.sqrt(i+1)) * np.sqrt(np.log(neural.get_loss() + 1)) )
 
     print(neural.get_output(inputs))
     print(neural.loss([0.5]))
